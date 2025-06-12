@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💊 Sistema de Registro de Sustancias</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .warning {
+            background: #e74c3c;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .controls {
+            padding: 30px;
+            background: linear-gradient(145deg, #f8f9fa, #e9ecef);
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .dropdown {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+            transition: border-color 0.3s;
+        }
+
+        .dropdown:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-info {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(45deg, #f39c12, #e67e22);
+            color: white;
+        }
+
+        .results {
+            padding: 30px;
+            min-height: 200px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .results h3 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .alert {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-critical {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #dc3545;
+            animation: pulse 1s infinite;
+        }
+
+        .alert-extreme {
+            background: #8b0000;
+            color: white;
+            border: 3px solid #ff0000;
+            animation: pulse 1s infinite;
+            font-weight: bold;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            font-size: 12px;
+        }
+
+        .table th,
+        .table td {
+            padding: 8px 4px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+            font-size: 11px;
+        }
+
+        .table th {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            font-weight: bold;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            min-width: 30px;
+        }
+
+        .table th:first-child {
+            writing-mode: horizontal-tb;
+            text-orientation: unset;
+            min-width: 100px;
+        }
+
+        .table tr:hover {
+            background: linear-gradient(90deg, #f8f9fa, #e9ecef);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .legend {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .risk-0 { background: #2196F3; } /* Azul - Info/Misma sustancia */
+        .risk-1 { background: #4CAF50; } /* Verde - Bajo riesgo */
+        .risk-2 { background: #ff9800; } /* Naranja - Moderado riesgo */
+        .risk-3 { background: #f44336; } /* Rojo - Alto riesgo */
+        .risk-4 { background: #8b0000; color: white; font-weight: bold; } /* Rojo Oscuro - Riesgo Extremo */
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .empty-state .icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💊 Sistema de Registro de Sustancias</h1>
+            <p>Gestiona tu consumo de forma informada</p>
+        </div>
+
+        <div class="warning">
+            ⚠️ IMPORTANTE: Esta herramienta es solo informativa. Siempre consulta con profesionales de la salud y considera los riesgos antes de consumir cualquier sustancia
+        </div>
+
+        <div style="background: #27ae60; color: white; padding: 10px; text-align: center; font-size: 14px;">
+            💾 Los datos se guardan automáticamente en tu navegador - Solo tú puedes verlos
+        </div>
+
+        <div class="controls">
+            <h3>🎛️ Controles:</h3>
+            
+            <div class="control-group">
+                <label for="medicamentSelect">Sustancia:</label>
+                <select id="medicamentSelect" class="dropdown">
+                    <option value="Marihuana">Marihuana</option>
+                    <option value="LSD">LSD</option>
+                    <option value="Hongos">Hongos</option>
+                    <option value="Cafeína">Cafeína</option>
+                    <option value="MDMA">MDMA</option>
+                    <option value="Ketamina">Ketamina</option>
+                    <option value="Alcohol">Alcohol</option>
+                    <option value="GHB">GHB</option>
+                    <option value="Cocaína">Cocaína</option>
+                    <option value="Popper">Popper</option>
+                    <option value="Viagra">Viagra</option>
+                    <option value="Bazuco">Bazuco</option>
+                    <option value="2CB">2CB</option>
+                    <option value="NBOMe">NBOMe</option>
+                    <option value="Heroína">Heroína</option>
+                    <option value="Benzodiacepina">Benzodiacepina</option>
+                    <option value="DMT">DMT</option>
+                    <option value="Mescalina">Mescalina</option>
+                    <option value="Anfetamina">Anfetamina</option>
+                    <option value="Metanfetamina">Metanfetamina</option>
+                </select>
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-success" onclick="registrarsustancia()">
+                    💊 Registrar Consumo
+                </button>
+                <button class="btn btn-info" onclick="mostrarHistorial()">
+                    📋 Mostrar Historial
+                </button>
+                <button class="btn btn-danger" onclick="limpiarHistorial()">
+                    🗑️ Limpiar Historial
+                </button>
+                <button class="btn btn-warning" onclick="mostrarMatriz()">
+                    📊 Ver Matriz Compatibilidad
+                </button>
+            </div>
+        </div>
+
+        <div class="results">
+            <h3>📤 Resultados:</h3>
+            <div id="resultContainer">
+                <div class="empty-state">
+                    <div class="icon">🏥</div>
+                    <p>Selecciona una acción para comenzar</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class SubstanceTracker {
+            constructor() {
+                // NUEVA MATRIZ DE COMPATIBILIDAD COMPLETA
+                // Esta matriz define el nivel de riesgo de combinar dos sustancias.
+                // Los valores (0-4) corresponden a los mensajes de alerta definidos en 'mensajesAlerta'.
+                this.matrizCompatibilidad = {
+                    "Marihuana": {
+                        "Marihuana": 0, "LSD": 1, "Hongos": 1, "Cafeína": 1, "MDMA": 1, 
+                        "Ketamina": 1, "Alcohol": 1, "GHB": 1, "Cocaína": 1, "Popper": 1, 
+                        "Viagra": 1, "Bazuco": 1, "2CB": 2, "NBOMe": 2, "Heroína": 1, 
+                        "Benzodiacepina": 1, "DMT": 1, "Mescalina": 1, "Anfetamina": 2, "Metanfetamina": 2
+                    },
+                    "LSD": {
+                        "Marihuana": 1, "LSD": 0, "Hongos": 1, "Cafeína": 1, "MDMA": 1, 
+                        "Ketamina": 1, "Alcohol": 1, "GHB": 1, "Cocaína": 2, "Popper": 2, 
+                        "Viagra": 2, "Bazuco": 2, "2CB": 1, "NBOMe": 1, "Heroína": 3, 
+                        "Benzodiacepina": 1, "DMT": 1, "Mescalina": 1, "Anfetamina": 2, "Metanfetamina": 2
+                    },
+                    "Hongos": {
+                        "Marihuana": 1, "LSD": 1, "Hongos": 0, "Cafeína": 1, "MDMA": 1, 
+                        "Ketamina": 1, "Alcohol": 1, "GHB": 1, "Cocaína": 2, "Popper": 3, 
+                        "Viagra": 3, "Bazuco": 3, "2CB": 2, "NBOMe": 1, "Heroína": 3, 
+                        "Benzodiacepina": 1, "DMT": 1, "Mescalina": 1, "Anfetamina": 2, "Metanfetamina": 2
+                    },
+                    "Cafeína": {
+                        "Marihuana": 1, "LSD": 1, "Hongos": 1, "Cafeína": 0, "MDMA": 2, 
+                        "Ketamina": 2, "Alcohol": 2, "GHB": 2, "Cocaína": 2, "Popper": 2, 
+                        "Viagra": 2, "Bazuco": 2, "2CB": 1, "NBOMe": 1, "Heroína": 1, 
+                        "Benzodiacepina": 1, "DMT": 1, "Mescalina": 1, "Anfetamina": 2, "Metanfetamina": 2
+                    },
+                    "MDMA": {
+                        "Marihuana": 1, "LSD": 1, "Hongos": 1, "Cafeína": 2, "MDMA": 0, 
+                        "Ketamina": 1, "Alcohol": 2, "GHB": 1, "Cocaína": 3, "Popper": 3, 
+                        "Viagra": 3, "Bazuco": 3, "2CB": 1, "NBOMe": 2, "Heroína": 4, 
+                        "Benzodiacepina": 1, "DMT": 1, "Mescalina": 1, "Anfetamina": 1, "Metanfetamina": 1
+                    },
+                    "Ketamina": {
+                        "Marihuana": 1, "LSD": 1, "Hongos": 1, "Cafeína": 2, "MDMA": 1, 
+                        "Ketamina": 0, "Alcohol": 4, "GHB": 4, "Cocaína": 3, "Popper": 1, 
+                        "Viagra": 1, "Bazuco": 3, "2CB": 1, "NBOMe": 1, "Heroína": 4, 
+                        "Benzodiacepina": 2, "DMT": 1, "Mescalina": 1, "Anfetamina": 2, "Metanfetamina": 2
+                    },
+                    "Alcohol": {
+                        "Marihuana": 1, "LSD": 1, "Hongos": 1, "Cafeína": 2, "MDMA": 2, 
+                        "Ketamina": 4, "Alcohol": 0, "GHB": 4, "Cocaína": 3, "Popper": 3, 
+                        "Viagra": 3, "Bazuco": 3, "2CB": 1, "NBOMe": 2, "Heroína": 4, 
+                        "Benzodiacepina": 4, "DMT": 1, "Mescalina": 1, "Anfetamina": 2, "Metanfetamina": 2
+                    },
+                    "GHB": {
+                        "Marihuana": 1, "LSD": 1, "Hongos": 1, "Cafeína": 2, "MDMA": 1, 
+                        "Ketamina": 4, "Alcohol": 4, "GHB": 0, "Cocaína": 3, "Popper": 3, 
+                        "Viagra": 3, "Bazuco": 3, "2CB": 1, "NBOMe": 1, "Heroína": 4, 
+                        "Benzodiacepina": 4, "DMT": 1, "Mescalina": 1, "Anfetamina": 2, "Metanfetamina": 2
+                    },
+                    "Cocaína": {
+                        "Marihuana": 1, "LSD": 2, "Hongos": 2, "Cafeína": 2, "MDMA": 3, 
+                        "Ketamina": 3, "Alcohol": 3, "GHB": 3, "Cocaína": 0, "Popper": 4, 
+                        "Viagra": 4, "Bazuco": 4, "2CB": 2, "NBOMe": 3, "Heroína": 4, 
+                        "Benzodiacepina": 1, "DMT": 2, "Mescalina": 2, "Anfetamina": 2, "Metanfetamina": 2
+                    },
+                    "Popper": {
+                        "Marihuana": 1, "LSD": 2, "Hongos": 3, "Cafeína": 2, "MDMA": 3, 
+                        "Ketamina": 1, "Alcohol": 3, "GHB": 3, "Cocaína": 4, "Popper": 0, 
+                        "Viagra": 4, "Bazuco": 4, "2CB": 2, "NBOMe": 2, "Heroína": 2, 
+                        "Benzodiacepina": 2, "DMT": 2, "Mescalina": 2, "Anfetamina": 1, "Metanfetamina": 1
+                    },
+                    "Viagra": {
+                        "Marihuana": 1, "LSD": 2, "Hongos": 3, "Cafeína": 2, "MDMA": 3, 
+                        "Ketamina": 1, "Alcohol": 3, "GHB": 3, "Cocaína": 4, "Popper": 4, 
+                        "Viagra": 0, "Bazuco": 4, "2CB": 2, "NBOMe": 2, "Heroína": 4, 
+                        "Benzodiacepina": 4, "DMT": 2, "Mescalina": 2, "Anfetamina": 4, "Metanfetamina": 4
+                    },
+                    "Bazuco": {
+                        "Marihuana": 1, "LSD": 2, "Hongos": 3, "Cafeína": 2, "MDMA": 3, 
+                        "Ketamina": 3, "Alcohol": 3, "GHB": 3, "Cocaína": 4, "Popper": 4, 
+                        "Viagra": 4, "Bazuco": 0, "2CB": 2, "NBOMe": 3, "Heroína": 4, 
+                        "Benzodiacepina": 1, "DMT": 2, "Mescalina": 2, "Anfetamina": 4, "Metanfetamina": 4
+                    },
+                    "2CB": {
+                        "Marihuana": 2, "LSD": 1, "Hongos": 1, "Cafeína": 1, "MDMA": 1, 
+                        "Ketamina": 1, "Alcohol": 1, "GHB": 1, "Cocaína": 2, "Popper": 2, 
+                        "Viagra": 2, "Bazuco": 2, "2CB": 0, "NBOMe": 2, "Heroína": 4, 
+                        "Benzodiacepina": 1, "DMT": 1, "Mescalina": 2, "Anfetamina": 2, "Metanfetamina": 2
+                    },
+                    "NBOMe": {
+                        "Marihuana": 2, "LSD": 1, "Hongos": 1, "Cafeína": 1, "MDMA": 2, 
+                        "Ketamina": 1, "Alcohol": 2, "GHB": 1, "Cocaína": 3, "Popper": 2, 
+                        "Viagra": 2, "Bazuco": 3, "2CB": 2, "NBOMe": 0, "Heroína": 3, 
+                        "Benzodiacepina": 1, "DMT": 1, "Mescalina": 2, "Anfetamina": 3, "Metanfetamina": 3
+                    },
+                    "Heroína": {
+                        "Marihuana": 1, "LSD": 3, "Hongos": 3, "Cafeína": 1, "MDMA": 4, 
+                        "Ketamina": 4, "Alcohol": 4, "GHB": 4, "Cocaína": 4, "Popper": 2, 
+                        "Viagra": 4, "Bazuco": 4, "2CB": 4, "NBOMe": 3, "Heroína": 0, 
+                        "Benzodiacepina": 4, "DMT": 1, "Mescalina": 1, "Anfetamina": 3, "Metanfetamina": 3
+                    },
+                    "Benzodiacepina": {
+                        "Marihuana": 1, "LSD": 1, "Hongos": 1, "Cafeína": 1, "MDMA": 1, 
+                        "Ketamina": 2, "Alcohol": 4, "GHB": 4, "Cocaína": 1, "Popper": 2, 
+                        "Viagra": 4, "Bazuco": 1, "2CB": 1, "NBOMe": 1, "Heroína": 4, 
+                        "Benzodiacepina": 0, "DMT": 2, "Mescalina": 2, "Anfetamina": 3, "Metanfetamina": 3
+                    },
+                    "DMT": {
+                        "Marihuana": 1, "LSD": 1, "Hongos": 1, "Cafeína": 1, "MDMA": 1, 
+                        "Ketamina": 1, "Alcohol": 1, "GHB": 1, "Cocaína": 2, "Popper": 2, 
+                        "Viagra": 2, "Bazuco": 2, "2CB": 1, "NBOMe": 1, "Heroína": 1, 
+                        "Benzodiacepina": 2, "DMT": 0, "Mescalina": 1, "Anfetamina": 2, "Metanfetamina": 2
+                    },
+                    "Mescalina": {
+                        "Marihuana": 1, "LSD": 1, "Hongos": 1, "Cafeína": 1, "MDMA": 1, 
+                        "Ketamina": 1, "Alcohol": 1, "GHB": 1, "Cocaína": 2, "Popper": 2, 
+                        "Viagra": 2, "Bazuco": 2, "2CB": 2, "NBOMe": 2, "Heroína": 1, 
+                        "Benzodiacepina": 2, "DMT": 1, "Mescalina": 0, "Anfetamina": 2, "Metanfetamina": 2
+                    },
+                    "Anfetamina": {
+                        "Marihuana": 2, "LSD": 2, "Hongos": 2, "Cafeína": 2, "MDMA": 1, 
+                        "Ketamina": 2, "Alcohol": 2, "GHB": 2, "Cocaína": 2, "Popper": 1, 
+                        "Viagra": 4, "Bazuco": 4, "2CB": 2, "NBOMe": 3, "Heroína": 3, 
+                        "Benzodiacepina": 3, "DMT": 2, "Mescalina": 2, "Anfetamina": 0, "Metanfetamina": 3
+                    },
+                    "Metanfetamina": {
+                        "Marihuana": 2, "LSD": 2, "Hongos": 2, "Cafeína": 2, "MDMA": 1, 
+                        "Ketamina": 2, "Alcohol": 2, "GHB": 2, "Cocaína": 2, "Popper": 1, 
+                        "Viagra": 4, "Bazuco": 4, "2CB": 2, "NBOMe": 3, "Heroína": 3, 
+                        "Benzodiacepina": 3, "DMT": 2, "Mescalina": 2, "Anfetamina": 3, "Metanfetamina": 0
+                    }
+                };
+
+                // Mensajes asociados a los niveles de riesgo de la matriz.
+                this.mensajesAlerta = {
+                    0: "Es la misma sustancia.",
+                    1: "⚠️ PRECAUCIÓN LEVE: Combinación de bajo riesgo. Mantente hidratado y en un entorno seguro.",
+                    2: "🟠 ADVERTENCIA MODERADA: Riesgo intermedio. Considera evitar esta combinación o reducir dosis.",
+                    3: "🔴 PELIGRO ALTO: Combinación peligrosa. Puede causar efectos adversos graves.",
+                    4: "💀 PELIGRO EXTREMO: Combinación potencialmente mortal. NO MEZCLAR bajo ninguna circunstancia."
+                };
+
+                // Carga los registros existentes desde el almacenamiento local del navegador (localStorage).
+                this.registros = this.cargarRegistros();
+            }
+
+            /**
+             * Carga los registros de sustancias desde localStorage.
+             * @returns {Array} Un array de objetos con los registros.
+             */
+            cargarRegistros() {
+                try {
+                    const registrosGuardados = localStorage.getItem('sustancias_registros');
+                    // Si hay registros guardados, los parsea de JSON a un objeto JavaScript.
+                    // Si no, devuelve un array vacío.
+                    return registrosGuardados ? JSON.parse(registrosGuardados) : [];
+                } catch (error) {
+                    console.error('Error al cargar registros:', error);
+                    return [];
+                }
+            }
+
+            /**
+             * Guarda los registros de sustancias en localStorage.
+             */
+            guardarRegistros() {
+                try {
+                    // Convierte el array de registros a una cadena JSON antes de guardarla.
+                    localStorage.setItem('sustancias_registros', JSON.stringify(this.registros));
+                } catch (error) {
+                    console.error('Error al guardar registros:', error);
+                }
+            }
+
+            /**
+             * Verifica la compatibilidad de una sustancia seleccionada con las sustancias ya registradas en el día actual.
+             * @param {string} sustanciaSeleccionada - La sustancia que el usuario intenta registrar.
+             * @param {string} fechaActual - La fecha actual en formato 'YYYY-MM-DD'.
+             * @returns {Object} Un objeto con información sobre la alerta (si aplica).
+             */
+            verificarCompatibilidad(sustanciaSeleccionada, fechaActual) {
+                // Filtra los registros para obtener solo los del día actual.
+                const registrosDelDia = this.registros.filter(
+                    registro => registro.soloFecha === fechaActual
+                );
+
+                // Si no hay registros hoy, no hay alerta de compatibilidad.
+                if (registrosDelDia.length === 0) {
+                    return { tieneAlerta: false, nivelRiesgo: 0, sustanciaConflicto: "", mensaje: "" };
+                }
+
+                // Itera sobre los registros del día para verificar compatibilidad.
+                for (let registro of registrosDelDia) {
+                    const sustanciaRegistradaHoy = registro.sustancia;
+
+                    // Caso 1: Intentando registrar la misma sustancia múltiples veces en el día.
+                    if (sustanciaSeleccionada === sustanciaRegistradaHoy) {
+                        return {
+                            tieneAlerta: true,
+                            nivelRiesgo: 0, // Nivel 0 para indicar que es la misma sustancia.
+                            sustanciaConflicto: sustanciaRegistradaHoy,
+                            mensaje: `Ya has registrado '${sustanciaSeleccionada}' hoy.`
+                        };
+                    }
+
+                    // Caso 2: Sustancias diferentes, verificar compatibilidad en la matriz.
+                    // Accede a la matriz para encontrar el nivel de riesgo entre las dos sustancias.
+                    const nivelRiesgo = this.matrizCompatibilidad[sustanciaRegistradaHoy]?.[sustanciaSeleccionada];
+
+                    // Si hay un nivel de riesgo (mayor que 0), genera un mensaje de alerta.
+                    if (nivelRiesgo > 0) {
+                        const mensajeCompleto = `${this.mensajesAlerta[nivelRiesgo]}\n\nIntentando registrar '${sustanciaSeleccionada}' el mismo día que se registró '${sustanciaRegistradaHoy}'.`;
+                        return {
+                            tieneAlerta: true,
+                            nivelRiesgo: nivelRiesgo,
+                            sustanciaConflicto: sustanciaRegistradaHoy,
+                            mensaje: mensajeCompleto
+                        };
+                    }
+                }
+
+                // Si no se encontraron conflictos, no hay alerta.
+                return { tieneAlerta: false, nivelRiesgo: 0, sustanciaConflicto: "", mensaje: "" };
+            }
+
+            /**
+             * Registra una nueva sustancia en el historial.
+             * @param {string} sustancia - El nombre de la sustancia a registrar.
+             */
+            registrarsustancia(sustancia) {
+                const fechaHoraActual = new Date();
+                const fechaHoraFormateada = fechaHoraActual.toLocaleString('es-ES');
+                const soloFechaActual = fechaHoraActual.toISOString().split('T')[0]; // Solo la fecha para comparaciones diarias
+
+                const nuevoRegistro = {
+                    sustancia: sustancia,
+                    fechaHora: fechaHoraFormateada,
+                    soloFecha: soloFechaActual,
+                    timestamp: fechaHoraActual.getTime() // Para ordenar fácilmente por fecha
+                };
+
+                this.registros.push(nuevoRegistro);
+                
+                // Guarda el array actualizado en localStorage.
+                this.guardarRegistros();
+            }
+
+            /**
+             * Genera el HTML para mostrar un mensaje de alerta basado en el nivel de riesgo.
+             * @param {number} nivelRiesgo - El nivel de riesgo (0-4).
+             * @param {string} mensaje - El texto del mensaje.
+             * @returns {string} El HTML del elemento de alerta.
+             */
+            mostrarAlerta(nivelRiesgo, mensaje) {
+                let alertClass = '';
+                let alertTitle = '';
+
+                switch (nivelRiesgo) {
+                    case 0:
+                        alertClass = 'alert-info';
+                        alertTitle = 'ℹ️ INFO';
+                        break;
+                    case 1:
+                        alertClass = 'alert-warning';
+                        alertTitle = '⚠️ ADVERTENCIA';
+                        break;
+                    case 2:
+                        alertClass = 'alert-danger';
+                        alertTitle = '🚨 ERROR'; // Aunque el mensaje sea "Moderada", el CSS usa danger.
+                        break;
+                    case 3:
+                        alertClass = 'alert-critical';
+                        alertTitle = '☠️ PELIGRO CRÍTICO';
+                        break;
+                    case 4:
+                        alertClass = 'alert-extreme';
+                        alertTitle = '💀 PELIGRO EXTREMO';
+                        break;
+                    default:
+                        alertClass = 'alert-warning';
+                        alertTitle = '❓ ADVERTENCIA';
+                }
+
+                // Reemplaza los saltos de línea (\n) por <br> para que se muestren correctamente en HTML.
+                return `<div class="alert ${alertClass}"><strong>${alertTitle}:</strong> ${mensaje.replace(/\n/g, '<br>')}</div>`;
+            }
+
+            /**
+             * Calcula y devuelve estadísticas básicas sobre los registros.
+             * @returns {Object} Un objeto con el total de registros, sustancias únicas y registros de hoy.
+             */
+            obtenerEstadisticas() {
+                const totalRegistros = this.registros.length;
+                // Usa un Set para contar sustancias únicas.
+                const sustanciasUnicos = new Set(this.registros.map(r => r.sustancia)).size;
+                const fechaHoy = new Date().toISOString().split('T')[0];
+                const registrosHoy = this.registros.filter(r => r.soloFecha === fechaHoy).length;
+
+                return { totalRegistros, sustanciasUnicos, registrosHoy };
+            }
+        }
+
+        // Instancia global de la aplicación.
+        // Se usa 'SubstanceTracker' para que coincida con el nombre de la clase.
+        const app = new SubstanceTracker();
+
+        /**
+         * Función que se ejecuta al hacer clic en 'Registrar Consumo'.
+         * Obtiene la sustancia seleccionada, verifica la compatibilidad y la registra.
+         */
+        function registrarsustancia() {
+            const sustanciaSeleccionado = document.getElementById('medicamentSelect').value;
+            const fechaActual = new Date().toISOString().split('T')[0];
+            
+            let html = `<h4>🔍 Verificando compatibilidad para: ${sustanciaSeleccionado}</h4>`;
+            html += '<hr>';
+
+            // Verificar compatibilidad ANTES de registrar para mostrar la alerta pertinente.
+            const { tieneAlerta, nivelRiesgo, sustanciaConflicto, mensaje } = app.verificarCompatibilidad(
+                sustanciaSeleccionado, fechaActual
+            );
+
+            // Mostrar alerta si existe un conflicto.
+            if (tieneAlerta) {
+                html += app.mostrarAlerta(nivelRiesgo, mensaje);
+            }
+
+            // Registrar la sustancia (siempre se registra, las alertas son informativas).
+            app.registrarsustancia(sustanciaSeleccionado);
+
+            // Mostrar un mensaje de confirmación del registro.
+            if (!tieneAlerta || nivelRiesgo === 0) {
+                html += `<div class="alert alert-info"><strong>✅</strong> Sustancia '${sustanciaSeleccionado}' registrada exitosamente</div>`;
+            } else {
+                // Si hubo una alerta de compatibilidad, se indica que se registró "con alerta".
+                html += `<div class="alert alert-warning"><strong>⚠️</strong> Sustancia '${sustanciaSeleccionado}' registrada con alerta de compatibilidad</div>`;
+            }
+
+            html += `<p><strong>📅 Fecha y hora:</strong> ${new Date().toLocaleString('es-ES')}</p>`;
+
+            // Actualiza el contenedor de resultados en la interfaz.
+            document.getElementById('resultContainer').innerHTML = html;
+        }
+
+        /**
+         * Función que se ejecuta al hacer clic en 'Mostrar Historial'.
+         * Muestra una tabla con todas las sustancias registradas y estadísticas.
+         */
+        function mostrarHistorial() {
+            let html = '<h4>📋 HISTORIAL DE CONSUMO DE SUSTANCIAS</h4>';
+            html += '<hr>';
+
+            if (app.registros.length > 0) {
+                // Ordena los registros por fecha (más recientes primero) usando el timestamp.
+                const registrosOrdenados = [...app.registros].sort((a, b) => b.timestamp - a.timestamp);
+
+                html += '<table class="table">';
+                html += '<thead><tr><th>Sustancia</th><th>Fecha y Hora</th></tr></thead>';
+                html += '<tbody>';
+                
+                // Recorre los registros ordenados y añade una fila a la tabla por cada uno.
+                registrosOrdenados.forEach(registro => {
+                    html += `<tr><td>${registro.sustancia}</td><td>${registro.fechaHora}</td></tr>`;
+                });
+                
+                html += '</tbody></table>';
+
+                // Muestra las estadísticas de consumo.
+                const stats = app.obtenerEstadisticas();
+                html += '<h5>📊 ESTADÍSTICAS:</h5>';
+                html += '<div class="stats">';
+                html += `<div class="stat-card"><div class="stat-number">${stats.totalRegistros}</div><div class="stat-label">Total de registros</div></div>`;
+                html += `<div class="stat-card"><div class="stat-number">${stats.sustanciasUnicos}</div><div class="stat-label">Sustancias diferentes</div></div>`;
+                html += `<div class="stat-card"><div class="stat-number">${stats.registrosHoy}</div><div class="stat-label">Registros hoy</div></div>`;
+                html += '</div>';
+            } else {
+                // Mensaje para cuando no hay registros.
+                html += '<div class="empty-state">';
+                html += '<div class="icon">📋</div>';
+                html += '<p>ℹ️ No hay registros de consumo aún.</p>';
+                html += '<p>Registra tu primera sustancia para comenzar.</p>';
+                html += '</div>';
+            }
+
+            document.getElementById('resultContainer').innerHTML = html;
+        }
+
+        /**
+         * Función que se ejecuta al hacer clic en 'Limpiar Historial'.
+         * Borra todos los registros y vacía localStorage.
+         */
+        function limpiarHistorial() {
+            app.registros = []; // Vacía el array de registros en la instancia.
+            app.guardarRegistros(); // Persiste el cambio a localStorage.
+            document.getElementById('resultContainer').innerHTML = 
+                '<div class="alert alert-info"><strong>🗑️</strong> Historial limpiado exitosamente</div>';
+        }
+
+        /**
+         * Función que se ejecuta al hacer clic en 'Ver Matriz Compatibilidad'.
+         * Muestra la tabla completa de compatibilidad entre sustancias y su leyenda.
+         */
+        function mostrarMatriz() {
+            let html = '<h4>📊 MATRIZ DE COMPATIBILIDAD</h4>';
+            html += '<hr>';
+
+            // Construye la tabla HTML de la matriz.
+            html += '<table class="table">';
+            html += '<thead><tr><th></th>';
+            
+            const sustancias = Object.keys(app.matrizCompatibilidad);
+            sustancias.forEach(med => {
+                html += `<th>${med}</th>`;
+            });
+            html += '</tr></thead><tbody>';
+
+            sustancias.forEach(medRow => {
+                html += `<tr><td><strong>${medRow}</strong></td>`;
+                sustancias.forEach(medCol => {
+                    const valor = app.matrizCompatibilidad[medRow][medCol];
+                    // Aplica una clase CSS diferente según el nivel de riesgo para colorear la celda.
+                    html += `<td class="risk-${valor}">${valor}</td>`;
+                });
+                html += '</tr>';
+            });
+
+            html += '</tbody></table>';
+
+            // Añade la leyenda de los niveles de riesgo.
+            html += '<div class="legend">';
+            html += '<h5>🔍 LEYENDA:</h5>';
+            html += '<div class="legend-item"><div class="legend-color risk-0"></div>0: Misma sustancia</div>';
+            html += '<div class="legend-item"><div class="legend-color risk-1"></div>1: Bajo riesgo</div>';
+            html += '<div class="legend-item"><div class="legend-color risk-2"></div>2: Alto riesgo</div>';
+            html += '<div class="legend-item"><div class="legend-color risk-3"></div>3: Peligro alto</div>';
+            html += '<div class="legend-item"><div class="legend-color risk-4"></div>4: Peligro extremo</div>';
+            html += '</div>';
+
+            // Añade información adicional sobre los niveles de riesgo.
+            html += '<div class="legend">';
+            html += '<h5>💡 INFORMACIÓN SOBRE NIVELES DE RIESGO:</h5>';
+            html += '<p>🟢 <strong>Bajo riesgo (0-1):</strong> Precaución mínima requerida. La combinación es generalmente segura.</p>';
+            html += '<p>🟠 <strong>Advertencia Moderada (2):</strong> Riesgo intermedio. Considera evitar esta combinación o reducir dosis. Puede haber efectos secundarios no deseados.</p>';
+            html += '<p>🔴 <strong>Peligro Alto (3):</strong> Combinación peligrosa. Puede causar efectos adversos graves y se desaconseja.</p>';
+            html += '<p>💀 <strong>Peligro Extremo (4):</strong> Combinación potencialmente mortal. NO MEZCLAR bajo ninguna circunstancia debido a riesgos severos para la salud.</p>';
+            html += '</div>';
+
+
+            document.getElementById('resultContainer').innerHTML = html;
+        }
+
+        // Mensaje de inicialización en la consola del navegador.
+        console.log('🚀 Aplicación inicializada correctamente');
+    </script>
+</body>
+</html>
