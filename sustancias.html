@@ -561,51 +561,42 @@
              * Verifica la compatibilidad de una sustancia seleccionada con las sustancias ya registradas en el día actual.
              * @param {string} sustanciaSeleccionada - La sustancia que el usuario intenta registrar.
              * @param {string} fechaActual - La fecha actual en formato 'YYYY-MM-DD'.
-             * @returns {Object} Un objeto con información sobre la alerta (si aplica).
+             * @returns {Array} Un array de objetos con información sobre las alertas (si aplica).
              */
             verificarCompatibilidad(sustanciaSeleccionada, fechaActual) {
-                // Filtra los registros para obtener solo los del día actual.
                 const registrosDelDia = this.registros.filter(
                     registro => registro.soloFecha === fechaActual
                 );
 
-                // Si no hay registros hoy, no hay alerta de compatibilidad.
-                if (registrosDelDia.length === 0) {
-                    return { tieneAlerta: false, nivelRiesgo: 0, sustanciaConflicto: "", mensaje: "" };
-                }
+                const conflictosEncontrados = [];
 
-                // Itera sobre los registros del día para verificar compatibilidad.
                 for (let registro of registrosDelDia) {
                     const sustanciaRegistradaHoy = registro.sustancia;
 
-                    // Caso 1: Intentando registrar la misma sustancia múltiples veces en el día.
+                    // Si intenta registrar la misma sustancia, añade una alerta específica.
                     if (sustanciaSeleccionada === sustanciaRegistradaHoy) {
-                        return {
-                            tieneAlerta: true,
+                        conflictosEncontrados.push({
                             nivelRiesgo: 0, // Nivel 0 para indicar que es la misma sustancia.
                             sustanciaConflicto: sustanciaRegistradaHoy,
                             mensaje: `Ya has registrado '${sustanciaSeleccionada}' hoy.`
-                        };
+                        });
+                        continue; // Continúa verificando otras sustancias para posibles combinaciones
                     }
 
-                    // Caso 2: Sustancias diferentes, verificar compatibilidad en la matriz.
-                    // Accede a la matriz para encontrar el nivel de riesgo entre las dos sustancias.
+                    // Verifica la compatibilidad en la matriz.
                     const nivelRiesgo = this.matrizCompatibilidad[sustanciaRegistradaHoy]?.[sustanciaSeleccionada];
 
                     // Si hay un nivel de riesgo (mayor que 0), genera un mensaje de alerta.
                     if (nivelRiesgo > 0) {
                         const mensajeCompleto = `${this.mensajesAlerta[nivelRiesgo]}\n\nIntentando registrar '${sustanciaSeleccionada}' el mismo día que se registró '${sustanciaRegistradaHoy}'.`;
-                        return {
-                            tieneAlerta: true,
+                        conflictosEncontrados.push({
                             nivelRiesgo: nivelRiesgo,
                             sustanciaConflicto: sustanciaRegistradaHoy,
                             mensaje: mensajeCompleto
-                        };
+                        });
                     }
                 }
-
-                // Si no se encontraron conflictos, no hay alerta.
-                return { tieneAlerta: false, nivelRiesgo: 0, sustanciaConflicto: "", mensaje: "" };
+                return conflictosEncontrados; // Devuelve todos los conflictos encontrados
             }
 
             /**
@@ -700,27 +691,47 @@
             let html = `<h4>🔍 Verificando compatibilidad para: ${sustanciaSeleccionado}</h4>`;
             html += '<hr>';
 
-            // Verificar compatibilidad ANTES de registrar para mostrar la alerta pertinente.
-            const { tieneAlerta, nivelRiesgo, sustanciaConflicto, mensaje } = app.verificarCompatibilidad(
+            // Verificar compatibilidad con TODAS las sustancias registradas hoy.
+            const conflictos = app.verificarCompatibilidad(
                 sustanciaSeleccionado, fechaActual
             );
 
-            // Mostrar alerta si existe un conflicto.
-            if (tieneAlerta) {
-                html += app.mostrarAlerta(nivelRiesgo, mensaje);
+            // Mostrar una alerta por CADA conflicto encontrado.
+            if (conflictos.length > 0) {
+                // Filtra conflictos duplicados para "Misma sustancia" si ya se va a registrar
+                const conflictosUnicos = [];
+                let yaRegistradaHoy = false;
+                
+                for(const conflicto of conflictos) {
+                    if (conflicto.nivelRiesgo === 0) {
+                        if (!yaRegistradaHoy) { // Solo muestra una alerta de "misma sustancia"
+                            conflictosUnicos.push(conflicto);
+                            yaRegistradaHoy = true;
+                        }
+                    } else {
+                        conflictosUnicos.push(conflicto);
+                    }
+                }
+
+                conflictosUnicos.forEach(conflicto => {
+                    html += app.mostrarAlerta(conflicto.nivelRiesgo, conflicto.mensaje);
+                });
             }
+
 
             // Registrar la sustancia (siempre se registra, las alertas son informativas).
             app.registrarsustancia(sustanciaSeleccionado);
 
-            // Mostrar un mensaje de confirmación del registro.
-            if (!tieneAlerta || nivelRiesgo === 0) {
-                html += `<div class="alert alert-info"><strong>✅</strong> Sustancia '${sustanciaSeleccionado}' registrada exitosamente</div>`;
-            } else {
-                // Si hubo una alerta de compatibilidad, se indica que se registró "con alerta".
-                html += `<div class="alert alert-warning"><strong>⚠️</strong> Sustancia '${sustanciaSeleccionado}' registrada con alerta de compatibilidad</div>`;
+            // Mostrar un mensaje de confirmación del registro, si no hubo una alerta de "misma sustancia" específica
+            // O si hubo alertas de compatibilidad pero no fue la misma sustancia
+            if (!conflictos.some(c => c.nivelRiesgo === 0)) { // Si no se alertó ya que era la misma sustancia
+                let hasSeriousAlerts = conflictos.some(c => c.nivelRiesgo > 1); // Riesgo moderado, alto o extremo
+                if (hasSeriousAlerts) {
+                     html += `<div class="alert alert-warning"><strong>⚠️</strong> Sustancia '${sustanciaSeleccionado}' registrada con una o más alertas de compatibilidad. Por favor, revisa las alertas anteriores.</div>`;
+                } else {
+                     html += `<div class="alert alert-info"><strong>✅</strong> Sustancia '${sustanciaSeleccionado}' registrada exitosamente.</div>`;
+                }
             }
-
             html += `<p><strong>📅 Fecha y hora:</strong> ${new Date().toLocaleString('es-ES')}</p>`;
 
             // Actualiza el contenedor de resultados en la interfaz.
@@ -827,10 +838,10 @@
             html += '<div class="legend">';
             html += '<h5>💡 INFORMACIÓN SOBRE NIVELES DE RIESGO:</h5>';
             // Texto modificado aquí para eliminar la frase "La combinación es generalmente segura."
-            html += '<p>👀 <strong>Bajo riesgo (0-1):</strong> Precaución mínima requerida.</p>';
-            html += '<p>⚠️ <strong>Advertencia Moderada (2):</strong> Riesgo intermedio. Considera evitar esta combinación o reducir dosis. Puede haber efectos secundarios no deseados.</p>';
-            html += '<p>‼️ <strong>Peligro Alto (3):</strong> Combinación peligrosa. Puede causar efectos adversos graves y se desaconseja.</p>';
-            html += '<p>💀 <strong>Peligro Extremo (4):</strong> Combinación potencialmente mortal. NO MEZCLAR bajo ninguna circunstancia debido a riesgos severos para la salud.</p>';
+            html += '<p>👀 <strong>Bajo riesgo (0-1):</strong> Precaución requerida.</p>';
+            html += '<p>🟠 <strong>Advertencia Moderada (2):</strong> Riesgo intermedio. Considera evitar esta combinación o reducir dosis. Puede haber efectos secundarios no deseados.</p>';
+            html += '<p>🔴 <strong>Peligro Alto (3):</strong> Combinación peligrosa. Puede causar efectos adversos graves y se desaconseja.</p>';
+            html += '<p>☠️ <strong>Peligro Extremo (4):</strong> Combinación potencialmente mortal. NO MEZCLAR bajo ninguna circunstancia debido a riesgos severos para la salud.</p>';
             html += '</div>';
 
 
