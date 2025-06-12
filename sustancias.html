@@ -194,7 +194,6 @@
             border-radius: 8px;
             overflow: hidden;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            font-size: 12px;
         }
 
         .table th,
@@ -202,22 +201,38 @@
             padding: 8px 4px;
             text-align: center;
             border-bottom: 1px solid #ddd;
-            font-size: 11px;
+            font-size: 14px; /* Tamaño de fuente aumentado */
         }
 
+        /* Estilos generales para los encabezados de tabla (aplicarán al historial) */
         .table th {
             background: linear-gradient(45deg, #667eea, #764ba2);
             color: white;
             font-weight: bold;
-            writing-mode: vertical-rl;
-            text-orientation: mixed;
-            min-width: 30px;
+            writing-mode: horizontal-tb; /* Por defecto, horizontal */
+            text-orientation: unset;
+            min-width: 100px; /* Ancho mínimo para encabezados horizontales */
+            vertical-align: middle; /* Alineación vertical central */
+            text-align: center; /* Alineación horizontal central */
         }
 
-        .table th:first-child {
-            writing-mode: horizontal-tb;
+        /* Estilos específicos para la tabla de matriz de compatibilidad */
+        .matrix-table th {
+            writing-mode: vertical-lr; /* Orientación vertical, lectura de abajo hacia arriba */
+            text-orientation: mixed; /* Permite una mejor visualización de los caracteres en vertical */
+            min-width: 30px; /* Ancho mínimo para columnas verticales */
+            min-height: 100px; /* Altura mínima para acomodar el texto vertical */
+            padding: 4px; /* Ajuste de padding para texto vertical */
+            vertical-align: middle; /* Centra el texto verticalmente en la celda */
+            text-align: center; /* Centra el texto horizontalmente dentro de la orientación vertical */
+        }
+
+        .matrix-table th:first-child {
+            writing-mode: horizontal-tb; /* La primera columna de la matriz sigue siendo horizontal */
             text-orientation: unset;
-            min-width: 100px;
+            min-width: 100px; /* Ancho suficiente para los encabezados de fila */
+            vertical-align: middle;
+            text-align: center;
         }
 
         .table tr:hover {
@@ -257,10 +272,23 @@
             margin: 20px 0;
         }
 
+        /* ESTILOS APLICADOS AQUÍ PARA LOS TÍTULOS Y CONTENIDO DE LA LEYENDA */
+        .legend h5 {
+            font-size: 1.3em; /* Tamaño de fuente para los títulos "LEYENDA" y "INFORMACIÓN SOBRE NIVELES DE RIESGO" */
+            font-weight: bold;
+            margin-bottom: 15px; /* Espacio debajo del título */
+        }
+
+        .legend-item,
+        .legend p {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Mismo tipo de letra que el body */
+            font-size: 14px; /* Mismo tamaño que las celdas de la tabla */
+        }
+
         .legend-item {
             display: flex;
             align-items: center;
-            margin: 10px 0;
+            margin-bottom: 10px; /* Separación entre ítems de la leyenda */
         }
 
         .legend-color {
@@ -762,7 +790,8 @@
             html += '<hr>';
 
             // Construye la tabla HTML de la matriz.
-            html += '<table class="table">';
+            // Se añade la clase 'matrix-table' para aplicar estilos específicos de orientación.
+            html += '<table class="table matrix-table">'; 
             html += '<thead><tr><th></th>';
             
             const sustancias = Object.keys(app.matrizCompatibilidad);
@@ -786,19 +815,21 @@
             // Añade la leyenda de los niveles de riesgo.
             html += '<div class="legend">';
             html += '<h5>🔍 LEYENDA:</h5>';
+            // Texto modificado para claridad y consistencia con los mensajes de alerta
             html += '<div class="legend-item"><div class="legend-color risk-0"></div>0: Misma sustancia</div>';
-            html += '<div class="legend-item"><div class="legend-color risk-1"></div>1: Bajo riesgo</div>';
-            html += '<div class="legend-item"><div class="legend-color risk-2"></div>2: Alto riesgo</div>';
-            html += '<div class="legend-item"><div class="legend-color risk-3"></div>3: Peligro alto</div>';
-            html += '<div class="legend-item"><div class="legend-color risk-4"></div>4: Peligro extremo</div>';
+            html += '<div class="legend-item"><div class="legend-color risk-1"></div>1: Precaución Leve (Bajo riesgo)</div>';
+            html += '<div class="legend-item"><div class="legend-color risk-2"></div>2: Advertencia Moderada (Riesgo intermedio)</div>';
+            html += '<div class="legend-item"><div class="legend-color risk-3"></div>3: Peligro Alto</div>';
+            html += '<div class="legend-item"><div class="legend-color risk-4"></div>4: Peligro Extremo</div>';
             html += '</div>';
 
             // Añade información adicional sobre los niveles de riesgo.
             html += '<div class="legend">';
             html += '<h5>💡 INFORMACIÓN SOBRE NIVELES DE RIESGO:</h5>';
-            html += '<p>🟢 <strong>Bajo riesgo (0-1):</strong> Precaución mínima requerida. La combinación es generalmente segura.</p>';
-            html += '<p>🟠 <strong>Advertencia Moderada (2):</strong> Riesgo intermedio. Considera evitar esta combinación o reducir dosis. Puede haber efectos secundarios no deseados.</p>';
-            html += '<p>🔴 <strong>Peligro Alto (3):</strong> Combinación peligrosa. Puede causar efectos adversos graves y se desaconseja.</p>';
+            // Texto modificado aquí para eliminar la frase "La combinación es generalmente segura."
+            html += '<p>👀 <strong>Bajo riesgo (0-1):</strong> Precaución mínima requerida.</p>';
+            html += '<p>⚠️ <strong>Advertencia Moderada (2):</strong> Riesgo intermedio. Considera evitar esta combinación o reducir dosis. Puede haber efectos secundarios no deseados.</p>';
+            html += '<p>‼️ <strong>Peligro Alto (3):</strong> Combinación peligrosa. Puede causar efectos adversos graves y se desaconseja.</p>';
             html += '<p>💀 <strong>Peligro Extremo (4):</strong> Combinación potencialmente mortal. NO MEZCLAR bajo ninguna circunstancia debido a riesgos severos para la salud.</p>';
             html += '</div>';
 
